@@ -1,0 +1,18 @@
+<!--{% extends "base.html" %}-->
+<!--{% load thumbnail %}-->
+
+<!--{% block content %}-->
+  <!--<div id="sidebar">-->
+        <!--<h3>Categories</h3>-->
+        <!--<ul>-->
+            <!--<li {% if not category %}class="selected"{% endif %}>-->
+                <!--<a href="{% url "products:category" %}">All</a>-->
+            <!--</li>-->
+            <!--{% for c in categories %}-->
+                <!--<li {% if category.slug == c.slug %}class="selected"{% endif %}>-->
+                <!--<a href="{% url "products:index"%}">{{ c.name }}</a>-->
+                <!--</li>-->
+            <!--{% endfor %}-->
+        <!--</ul>-->
+  <!--</div>-->
+<!--{% endblock %}-->

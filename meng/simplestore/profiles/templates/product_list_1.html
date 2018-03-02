@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load thumbnail %}
+
+<!--{% block title %}-->
+    <!--{% if category %}{{ category.name }}{% else %}Products{% endif %}-->
+<!--{% endblock title %}-->
+
+{% block content %}
+  <div class="container">
+    <div id="sidebar">
+        <h3>Categories</h3>
+        <ul>
+            <li {% if not category %}class="selected"{% endif %}>
+                <a href="{% url "products:index" %}">All</a>
+            </li>
+            {% for c in categories %}
+                <li {% if category.slug == c.slug %}class="selected"{% endif %}>
+                    <a href="{% url "products:category" %}"> {{c.name}}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="row products-row">
+      <ul class="product-list">
+        {% for object in products %}
+          <li class="product-list__item col-xs-6 col-md-4">
+            <a href="{% url "products:detail" object.slug %}">
+              {% if object.image %}
+                <img class="b-lazy img-responsive full-w"
+                     src="data:"
+                     data-src="{% thumbnail object.image 360x480 crop %}"
+                     alt="{{ object.name }}">
+              {% endif %}
+              <h2>{{ object.name }}</h2>
+              <span class="product-list__item__price">${{ object.price }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}

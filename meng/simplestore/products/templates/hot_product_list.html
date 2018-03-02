@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load thumbnail %}
+
+{% block content %}
+  <div class="container">
+    <div class="row products-row">
+      <ul class="hot-product-list">
+        {% for object in object_list %}
+          <li>ProductID:{{object.product}}
+              total:{{object.total}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+{% endblock %}
