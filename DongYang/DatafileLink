@@ -1,0 +1,16 @@
+Finished version of database
+
+Filter rull:
+
+1.All business whose address is in Pitt is considered as a pitt business
+
+2. All data related to pitt business are pitt information, including pitt review and pitt tip
+
+3. User gave pitt review or tip are considered as pitt user
+
+4. For friend of a user, all non pitt user friend are discarded.
+
+Database file link:
+https://drive.google.com/open?id=1Dumx5NVgOF9Q4F2QGVDmghGWK_HzgWpT
+
+Database file size: 64.3 MB
