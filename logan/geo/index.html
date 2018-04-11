@@ -1,0 +1,50 @@
+<html>
+  <head>
+    <title>GeoJSON Test</title>
+    <script src="https://d3js.org/d3.v4.min.js" type="text/javascript"></script>
+    <script src="https://d3js.org/topojson.v2.min.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div id="chart">
+
+    </div>
+    <script type="text/javascript">
+      d3.json("Neighborhoods_with_SNAP_Data.json", function(e, data){
+        var features = topojson.feature(data, data.objects.Neighborhoods_with_SNAP_Data);
+        var mesh = topojson.mesh(data, data.objects.Neighborhoods_with_SNAP_Data)
+        var project = d3.geoAlbers().fitSize([600, 800], features);
+        var path = d3.geoPath(project);
+        var chart = d3.select('#chart')
+          .append('svg')
+          .attr('height', 800)
+          .attr('width', 600);
+        var boundaries = chart
+          .selectAll('path')
+          .data(features.features)
+          .enter();
+        var cells = boundaries.append('path')
+          .attr('d', path)
+          .attr('stroke', 'black')
+          .attr('fill', 'red')
+          .on('mouseover', function(d){
+            d3.select(this)
+              .attr('fill', 'green');
+          })
+          .on('mouseout', function(d){
+            d3.select(this)
+              .attr('fill', 'red');
+          });
+        var labels = boundaries.append('text')
+          .text(function(d, i){return ''+i;})
+          .attr('stroke', 'blue')
+          .attr('font-size', 8)
+          .attr('text-anchor', 'middle')
+          .attr('x', function(d){return path.centroid(d)[0]})
+          .attr('y', function(d){return path.centroid(d)[1];});
+        d3.csv("neighborhood_names.csv", function(e, data){
+          labels.text(function(d, i){return data[i].Neighborhood;});
+        });
+      });
+    </script>
+  </body>
+</html>
