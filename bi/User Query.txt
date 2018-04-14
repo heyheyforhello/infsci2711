@@ -1,0 +1,81 @@
+1. What is the ratio of stores remain open/ total in different regions?
+ 
+2. What is the ratio of stores remain open/ total in different categories?
+ 
+3. For stores from different neighborhood, what is the average yelp given stars?
+ 
+4.  What is the total costumer visit count for stores reside in different regions?
+ 
+5. What is the most visited top-10 business brand?
+ 
+6. What is the total numbers of business store in each category?
+ 
+7. What is the average ratings of different category?
+ 
+8, What restaurant rated more than 4 stars in a certain neighborhood? (example: Shadyside)
+ 
+9, Is there a relation between average star given from a user and the user¡¯s account using time? (yelping since)
+ 
+10, What is the average rating in each year?
+
+nohup python -u loadData2.py > load.log 2>&1 &
+
+1.
+match (a:Business)-[:LOCATED_IN]-> (c:Neighborhood)
+with count(a) as total, c
+match (a:Business {is_open: 1}) -[:LOCATED_IN]-> (c:Neighborhood)
+return (count(a)*1.0/total) as open_ratio, c.name
+order by open_ratio desc
+
+2.
+match (a:Business)-[:CATEGORIZED_AS]-> (c:Category)
+with count(a) as total, c
+match (a:Business {is_open: 1}) -[:CATEGORIZED_AS]-> (c:Category)
+return (count(a)*1.0/total) as open_ratio, c.name
+order by open_ratio desc
+
+3.
+(logan's server)
+match (a:Business), (a) -[:LOCATED_IN]-> (b:Neighborhood)
+return avg(a.stars/a.count) as stars, b.name as neighborhood
+order by stars DESC
+
+(use our server: http://ec2-34-230-16-27.compute-1.amazonaws.com:7474)
+match (a:Business), (a) -[:LOCATED_IN]-> (b:Neighborhood)
+return avg(a.stars) as stars, b.name as neighborhood
+order by stars DESC
+
+4.
+match (a:Business), () - [r:REVIEWED] -> (a), (a) -[:LOCATED_IN]-> (b:Neighborhood)
+return b.name as neighborhood, count(*) as visited
+order by visited DESC
+
+5.
+match (a:Business), () - [r:REVIEWED] -> (a)
+return a.name as brand, count(*) as visited
+order by visited DESC
+limit 10
+
+6.
+match (a:Business), (a) -[:CATEGORIZED_AS]- (b:Category)
+return b.name, count(*) as stores
+order by stores DESC
+
+7.
+match (a:Category)
+return a.average as average, a.name as category
+order by a.average desc
+
+8.
+match (a:Business), (a) -[:LOCATED_IN]-> (b:Neighborhood)
+where b.name = 'Shadyside' and (a.stars/a.count) > 4
+return (a.stars/a.count) as stars, a.name as name
+order by stars DESC
+
+9.
+
+
+10.
+match (a:Business), () -[r:REVIEWED]-> (a)
+return a.name, avg(a.stars/a.count), substring(r.date, 0, 4) as year
+order by a.name ASC, year ASC
