@@ -1,0 +1,98 @@
+<html>
+  <head>
+    <title>GeoJSON Test</title>
+    <script src="https://d3js.org/d3.v4.min.js" type="text/javascript"></script>
+    <script src="https://d3js.org/topojson.v2.min.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <div id="chart">
+
+    </div>
+    <script type="text/javascript">
+      d3.csv("neighborhood_names.csv", function(e, names){
+        d3.json("Neighborhoods_with_SNAP_Data.json", function(e, n_data){
+          d3.json("Allegheny_County_Municipal_Boundaries.json", function(e, m_data){
+            d3.csv("municipal_names.csv", function(e, cities){
+              // Merge neighborhood geography objects based on labels
+              var neighborhood_topojson = n_data.objects.Neighborhoods_with_SNAP_Data.geometries;
+              for(var i in neighborhood_topojson){
+                neighborhood_topojson[i].properties = {
+                  name: names[i].yelp_name
+                };
+              }
+              var neighborhood_names = d3.set(names, function(d){return d.yelp_name;}).values();
+              var neighborhood_geojson = neighborhood_names.map(function(d){
+                return {type: "Feature",
+                        properties: {name: d},
+                        geometry: topojson.merge(n_data, neighborhood_topojson.filter(function(g){
+                          return g.properties.name == d;
+                        }))
+                       };
+              });
+
+              // Municipal geography objects
+              var city_names = d3.map(cities, function(d){return d.real_name;})
+              var city_topojson = m_data.objects.Allegheny_County_Municipal_Boundaries.geometries.filter(function(d){
+                if(city_names.has(d.properties.NAME)){
+                  d.properties.name = city_names.get(d.properties.NAME).yelp_name;
+                  return true;
+                } else {
+                  return false;
+                }
+              });
+              var city_geojson = topojson.feature(m_data, {type: "GeometryCollection",
+                                                           geometries: city_topojson});
+              // Data objects
+              var data = ['Dormont', 'Squirrel Hill', 'North Side', 'Sewickley'];
+              var filter = d3.set(data);
+
+              // Geography objects
+              var features = d3.merge([city_geojson.features, neighborhood_geojson])
+              //  .filter(function(d){return filter.has(d.properties.name);})
+              var geojson = {type: "FeatureCollection", features: features};
+              var project = d3.geoAlbers().fitSize([600, 800], geojson);
+              var path = d3.geoPath(project);
+
+              // Drawing map to SVG, with labels and such
+              var chart = d3.select('#chart')
+                .append('svg')
+                .attr('height', 800)
+                .attr('width', 600);
+              var boundaries = chart
+                .append('g')
+                .selectAll('path')
+                .data(geojson.features)
+                .enter();
+              var cells = boundaries.append('path')
+                .attr('d', path)
+                .attr('stroke', 'black')
+                .attr('fill', 'red')
+                .on('mouseover', function(d){
+                  d3.select(this)
+                    .attr('fill', 'green');
+                })
+                .on('mouseout', function(d){
+                  d3.select(this)
+                    .attr('fill', 'red');
+                });
+              var labels = boundaries.append('text')
+                .text(function(d, i){return d.properties.name;})
+                .attr('stroke', 'blue')
+                .attr('font-size', 8)
+                .attr('text-anchor', 'middle')
+                .attr('x', function(d){return path.centroid(d)[0]})
+                .attr('y', function(d){return path.centroid(d)[1];});
+
+              var spot = chart.append('circle')
+                .attr('stroke', 'black')
+                .attr('fill', 'purple')
+                .attr('r', 5)
+                .attr('cx', project([-79.851303,40.291939])[0])
+                .attr('cy', project([-79.851303,40.291939])[1]);
+            });
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
