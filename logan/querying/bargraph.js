@@ -1,3 +1,14 @@
+function callBarAjax(queryURL){    
+    $.ajax({
+      type: 'GET',
+      url: queryURL,
+      async: true,
+      data: {},
+      dataType: 'json',
+      success: barGraph,
+      error: function(j, s, e){console.log(s); console.log(e);}
+    });
+}
 
 function barGraph(data){
 
