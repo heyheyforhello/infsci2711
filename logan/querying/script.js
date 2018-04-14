@@ -1,69 +1,75 @@
-var chartScale;
-var opaqueScale;
 
-function categories(data){
-  console.log(data);
-  topCategories = data.slice(0,20)
-  chartScale = d3.scaleLinear()
-    .range([0, 500])
-    .domain([0, d3.max(topCategories, function(d){return d['c.businesses'];})]);
-  opaqueScale = d3.scaleLinear()
-    .domain(d3.extent(topCategories, function(d){return d['c.average'];}))
-    .range([.5, 1]);
+function barGraph(config){
+  return function (data){
 
-  var chart = d3.select('#chart')
-    .append('svg')
-    .attr('width', 900)
-    .attr('height', 800)
-    .append('g')
-    .attr('id', 'drawing')
-    .attr('transform', 'translate(20,30)');
+    var chartScale = d3.scaleLinear()
+      .range([0, 500])
+      .domain([0, d3.max(data, function(d){return d[config.lengthValue];})]);
+    var opaqueScale = d3.scaleLinear()
+      .domain(d3.extent(data, function(d){return d[config.opaqueValue];}))
+      .range([.5, 1]);
 
-  chart.selectAll('g.datapoint')
-    .data(topCategories)
-    .enter()
+    var chart = d3.select('#'+config.chartId)
+      .append('svg')
+      .attr('width', config.width)
+      .attr('height', config.height)
       .append('g')
-      .classed('datapoint', true)
-      .attr('transform', function(d,i){return 'translate(0,'+i*25+')';});
+      .attr('id', 'margin')
+      .attr('transform', 'translate(20,30)');
 
-  chart.selectAll('g.datapoint')
-    .append('text')
-    .attr('y', 20)
-    .on('click', function(d){overlap(d['c.name']);})
-    .text(function(d){return d['c.name'];});
+    var datapoints = chart.selectAll('g.datapoint')
+      .data(data)
+      .enter()
+        .append('g')
+        .classed('datapoint', true)
+        .attr('transform', function(d,i){return 'translate(0,'+i*25+')';});
 
-  chart.selectAll('g.datapoint')
-    .append('text')
-    .attr('y', 20)
-    .attr('x', function(d){return 220+chartScale(d['c.businesses']);})
-    .text(function(d){ return d['c.businesses'] + " businesses, average rating " + (''+d['c.average']).slice(0,4);})
-    .attr('font-size', 10);
+    datapoints
+      .append('text')
+      .attr('y', 20)
+      .on('click', function(d){overlap(d[config.labelValue]);})
+      .text(function(d){return d[config.labelValue];});
 
-  chart.selectAll('g.datapoint')
-    .append('rect')
-    .classed('totals', true)
-    .attr('x', 200)
-    .attr('y', 0)
-    .attr('height', 20)
-    .attr('width', function(d){return chartScale(d['c.businesses']);})
-    .attr('fill', 'blue')
-    .attr('opacity', function(d){return opaqueScale(d['c.average']);});
+    chart.selectAll('g.datapoint')
+      .append('text')
+      .attr('y', 20)
+      .attr('x', function(d){return 220+chartScale(d[config.lengthValue]);})
+      .text(function(d){ return (''+d[config.opaqueValue]).slice(0,4);})
+      .attr('font-size', 10);
+
+    chart.selectAll('g.datapoint')
+      .append('rect')
+      .classed('totals', true)
+      .attr('x', 200)
+      .attr('y', 0)
+      .attr('height', 20)
+      .attr('width', function(d){return chartScale(d[config.lengthValue]);})
+      .attr('fill', 'blue')
+      .attr('opacity', function(d){return opaqueScale(d[config.opaqueValue]);});
+  };
 }
 
 $.ajax({
   type: 'GET',
-  url: 'http://localhost:8080/categories',
+  url: '/categories',
   async: true,
   data: {},
   dataType: 'json',
-  success: categories,
+  success: barGraph({
+    lengthValue: 'c.businesses',
+    opaqueValue: 'c.average',
+    labelValue: 'c.name',
+    width: 800,
+    height: 600,
+    chartId: 'chart'
+  }),
   error: function(j, s, e){console.log(s); console.log(e);}
 });
 
 function overlap(cat){
   $.ajax({
     type: 'GET',
-    url: 'http://localhost:8080/overlap',
+    url: '/overlap',
     async: true,
     data: {category: cat},
     success: drawOverlap
