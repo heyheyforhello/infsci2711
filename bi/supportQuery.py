@@ -117,7 +117,7 @@ def AvgRateYear():
 
 # What is the count of ratings and average rating of stores in each neighborhood in a certain year?(example:2017)
 def AvgRateYearRegion():
-  """returns JSON with columns name and avg_star, year"""
+  """returns JSON with columns name and avg_star, region"""
   neo4jUrl = "http://18.219.142.86:7474/db/data"
   graph = py2neo.Graph(neo4jUrl, password='password')
   cql = """match ()-[r:REVIEWED]->()-[:LOCATED_IN]->(a:Neighborhood)
@@ -129,7 +129,7 @@ def AvgRateYearRegion():
 
 # What is the top 20 categories with total costumer visited?
 def TopVisitStoreCategories():
-  """returns JSON with columns name and avg_star, year"""
+  """returns JSON with columns name and visited, category"""
   neo4jUrl = "http://18.219.142.86:7474/db/data"
   graph = py2neo.Graph(neo4jUrl, password='password')
   cql = """match ()-[r:REVIEWED]->()-[:CATEGORIZED_AS]->(a:Category)
@@ -142,7 +142,7 @@ def TopVisitStoreCategories():
 
 # Is there a relation between average star given from a user and the user’s created day?
 def UserRateYear():
-  """returns JSON with columns name and avg_star, year"""
+  """returns JSON with columns name and avg_star, created_year"""
   neo4jUrl = "http://18.219.142.86:7474/db/data"
   graph = py2neo.Graph(neo4jUrl, password='password')
   cql = """match (a:User) -[r:REVIEWED]-> ()
